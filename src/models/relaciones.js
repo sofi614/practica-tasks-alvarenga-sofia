@@ -1,6 +1,7 @@
 import User from "./user.model.js";
 import Task from "./task.model.js";
 import Profile from "./profile.model.js";
+import Tag from "./tag.model.js";
 
 User.hasMany(Task, {
 	foreignKey: "userId",
@@ -28,4 +29,19 @@ Profile.belongsTo(User, {
 	onDelete: "CASCADE"
 });
 
-export { User, Task, Profile };
+Task.belongsToMany(Tag, {
+	through: "TaskTags",
+	foreignKey: "taskId",
+	otherKey: "tagId",
+	as: "tags",
+	onDelete: "CASCADE"
+});
+Tag.belongsToMany(Task, {
+	through: "TaskTags",
+	foreignKey: "tagId",
+	otherKey: "taskId",
+	as: "tasks",
+	onDelete: "CASCADE"
+});
+
+export { User, Task, Profile, Tag };

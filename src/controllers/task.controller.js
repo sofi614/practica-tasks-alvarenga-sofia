@@ -51,7 +51,13 @@ export const createTask = async (req, res) => {
 
 export const allTasks = async (req, res) => {
     try {
-        const tasks = await Task.findAll();
+        const tasks = await Task.findAll({
+            include: [{
+                model: User,
+                as: "user",
+                attributes: ["id", "name", "email"]
+            }]
+        });
         return res.status(200).json(tasks);
     } catch (error) {
         return res.status(500).json({ message: "Error al obtener las tareas", error: error.message });
@@ -61,7 +67,13 @@ export const allTasks = async (req, res) => {
 export const getTaskById = async (req, res) => {
     try {
         const { id } = req.params;
-        const task = await Task.findByPk(id);
+        const task = await Task.findByPk(id, {
+            include: [{
+                model: User,
+                as: "user",
+                attributes: ["id", "name", "email"]
+            }]
+        });
         if (!task) {
             return res.status(404).json({ message: "No se ha encontrado la tarea" });
         }
