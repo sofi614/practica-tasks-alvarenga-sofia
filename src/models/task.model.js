@@ -22,7 +22,7 @@ const Task = sequelize.define("Task", {
     },
     userId: {
         type: DataTypes.INTEGER,
-        allowNull: true
+        allowNull: false
     }
 }, {
     tableName: "tasks"
