@@ -4,7 +4,7 @@ const profileAttributes = ["id", "bio", "phoneNumber", "userId"];
 
 export const createProfile = async (req, res) => {
     try {
-        const { bio, phoneNumber, userId } = req.body;
+        const { bio, phoneNumber, userId } = req.body || {};
         if (!userId) {
             return res.status(400).json({ message: "userId es obligatorio" });
         }
@@ -58,7 +58,7 @@ export const updateProfile = async (req, res) => {
         if (!profile) {
             return res.status(404).json({ message: "Perfil no encontrado" });
         }
-        const { bio, phoneNumber, userId } = req.body;
+        const { bio, phoneNumber, userId } = req.body || {};
         if (userId && userId !== profile.userId) {
             if (!await User.findByPk(userId)) {
                 return res.status(404).json({ message: "Usuario no encontrado" });
