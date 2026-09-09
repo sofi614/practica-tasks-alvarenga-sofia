@@ -25,7 +25,8 @@ const Task = sequelize.define("Task", {
         allowNull: false
     }
 }, {
-    tableName: "tasks"
+    tableName: "tasks",
+    paranoid: true
 });
 
 export default Task;
