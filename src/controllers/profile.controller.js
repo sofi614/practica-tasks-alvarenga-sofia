@@ -1,4 +1,5 @@
 import { Profile, User } from "../models/relaciones.js";
+import { matchedData } from "express-validator";
 
 const profileAttributes = ["id", "bio", "phoneNumber", "userId"];
 
@@ -54,27 +55,30 @@ export const getProfileById = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
     try {
-        const profile = await Profile.findByPk(req.params.id);
+        const { id, ...profileData } = matchedData(req);
+        if (Object.keys(profileData).length === 0) {
+            return res.status(400).json({ message: "Debe enviar al menos un campo para actualizar" });
+        }
+        const profile = await Profile.findByPk(id);
         if (!profile) {
             return res.status(404).json({ message: "Perfil no encontrado" });
         }
-        const { bio, phoneNumber, userId } = req.body || {};
-        if (userId && userId !== profile.userId) {
-            if (!await User.findByPk(userId)) {
+        if (profileData.userId && profileData.userId !== profile.userId) {
+            if (!await User.findByPk(profileData.userId)) {
                 return res.status(404).json({ message: "Usuario no encontrado" });
             }
-            const profileForUser = await Profile.findOne({ where: { userId } });
+            const profileForUser = await Profile.findOne({ where: { userId: profileData.userId } });
             if (profileForUser && profileForUser.id !== profile.id) {
                 return res.status(400).json({ message: "El usuario ya tiene un perfil" });
             }
         }
-        if (phoneNumber) {
-            const profileForPhone = await Profile.findOne({ where: { phoneNumber } });
+        if (profileData.phoneNumber) {
+            const profileForPhone = await Profile.findOne({ where: { phoneNumber: profileData.phoneNumber } });
             if (profileForPhone && profileForPhone.id !== profile.id) {
                 return res.status(400).json({ message: "El número de teléfono ya está registrado" });
             }
         }
-        await profile.update({ bio, phoneNumber, userId });
+        await profile.update(profileData);
         return res.status(200).json({ message: "Perfil actualizado exitosamente", profile });
     } catch (error) {
         return res.status(500).json({ message: "Error al actualizar el perfil", error: error.message });
