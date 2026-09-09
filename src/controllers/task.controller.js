@@ -1,5 +1,6 @@
 import Task from "../models/task.model.js";
 import User from "../models/user.model.js";
+import { matchedData } from "express-validator";
 
 const validateTaskData = ({ title, description, isComplete }) => {
     if (typeof title !== "string" || title.trim().length === 0) {
@@ -85,35 +86,31 @@ export const getTaskById = async (req, res) => {
 
 export const updateTask = async (req, res) => {
     try {
-        const { id } = req.params;
-        const { title, description, isComplete, userId } = req.body || {};
-        const validationError = validateTaskData({ title, description, isComplete });
-        if (validationError) {
-            return res.status(400).json({ message: validationError });
+        const { id, ...taskData } = matchedData(req);
+        if (Object.keys(taskData).length === 0) {
+            return res.status(400).json({ message: "Debe enviar al menos un campo para actualizar" });
         }
         const task = await Task.findByPk(id);
         if (!task) {
             return res.status(404).json({ message: "No se ha encontrado la tarea" });
         }
-        if (!userId) {
-            return res.status(400).json({ message: "userId es obligatorio" });
+        if (taskData.userId !== undefined) {
+            const user = await User.findByPk(taskData.userId);
+            if (!user) {
+                return res.status(404).json({ message: "Usuario no encontrado" });
+            }
         }
-        const user = await User.findByPk(userId);
-        if (!user) {
-            return res.status(404).json({ message: "Usuario no encontrado" });
+        if (taskData.title) {
+            taskData.title = taskData.title.trim();
+            const tituloExistente = await Task.findOne({ where: { title: taskData.title } });
+            if (tituloExistente && tituloExistente.id !== task.id) {
+                return res.status(400).json({ message: "Ya existe una tarea con ese título" });
+            }
         }
-        const normalizedTitle = title.trim();
-        const normalizedDescription = description.trim();
-        const tituloExistente = await Task.findOne({ where: { title: normalizedTitle } });
-        if (tituloExistente && tituloExistente.id !== task.id) {
-            return res.status(400).json({ message: "Ya existe una tarea con ese título" });
+        if (taskData.description) {
+            taskData.description = taskData.description.trim();
         }
-        await task.update({
-            title: normalizedTitle,
-            description: normalizedDescription,
-            isComplete: isComplete === undefined ? task.isComplete : isComplete,
-            userId
-        });
+        await task.update(taskData);
         return res.status(200).json({ message: "Tarea actualizada exitosamente", task });
     } catch (error) {
         return res.status(500).json({ message: "Error al actualizar la tarea", error: error.message });

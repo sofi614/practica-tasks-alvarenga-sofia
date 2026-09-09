@@ -1,5 +1,6 @@
 import User from "../models/user.model.js";
 import Task from "../models/task.model.js";
+import { matchedData } from "express-validator";
 
 const validateUserData = ({ name, email, password }) => {
     if (typeof name !== "string" || name.trim().length === 0) {
@@ -78,23 +79,26 @@ export const getUserById = async (req, res) => {
 
 export const updateUser = async (req, res) => {
     try {
-        const { id } = req.params;
-        const { name, email, password } = req.body || {};
-        const validationError = validateUserData({ name, email, password });
-        if (validationError) {
-            return res.status(400).json({ message: validationError });
+        const { id, ...userData } = matchedData(req);
+        if (Object.keys(userData).length === 0) {
+            return res.status(400).json({ message: "Debe enviar al menos un campo para actualizar" });
         }
         const user = await User.findByPk(id);
         if (!user) {
             return res.status(404).json({ message: "No se ha encontrado el usuario" });
         }
-        const normalizedName = name.trim();
-        const normalizedEmail = email.trim();
-        const emailExistente = await User.findOne({ where: { email: normalizedEmail } });
-        if (emailExistente && emailExistente.id !== user.id) {
-            return res.status(400).json({ message: "Ya existe un usuario con ese email" });
+        if (userData.email) {
+            const normalizedEmail = userData.email.trim();
+            const emailExistente = await User.findOne({ where: { email: normalizedEmail } });
+            if (emailExistente && emailExistente.id !== user.id) {
+                return res.status(400).json({ message: "Ya existe un usuario con ese email" });
+            }
+            userData.email = normalizedEmail;
         }
-        await user.update({ name: normalizedName, email: normalizedEmail, password });
+        if (userData.name) {
+            userData.name = userData.name.trim();
+        }
+        await user.update(userData);
         return res.status(200).json({ message: "Usuario actualizado exitosamente", user });
     } catch (error) {
         return res.status(500).json({ message: "Error al actualizar el usuario", error: error.message });
