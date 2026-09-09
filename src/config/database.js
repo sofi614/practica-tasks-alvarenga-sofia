@@ -1,19 +1,21 @@
-import {Sequelize} from "sequelize"; 
+import "dotenv/config";
+import { Sequelize } from "sequelize";
 
-export const sequelize = new Sequelize ("tasks_users_db" , "root", "",{
-    host: "localhost",
-    dialect: "mysql",
-    logging: false
-})
+export const sequelize = new Sequelize(
+    process.env.DB_NAME || "tasks_users_db",
+    process.env.DB_USER || "root",
+    process.env.DB_PASSWORD || "",
+    {
+        host: process.env.DB_HOST || "localhost",
+        dialect: "mysql",
+        logging: false
+    }
+);
 
 export const conectarDB = async () => {
-    try{
-        await sequelize.authenticate();
-        console.log("conexion a base de datos exitosa");
-        await sequelize.sync();
-        console.log("tablas sincronizadas");
+    await sequelize.authenticate();
+    await sequelize.sync();
+    console.log("Base de datos conectada y tablas sincronizadas");
+};
 
-    } catch (error) {
-        console.log("fallo al concetar a la base de datos:", error);
-    }
-}
+export default conectarDB;
