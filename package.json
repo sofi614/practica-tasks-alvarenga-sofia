@@ -1,0 +1,23 @@
+{
+  "name": "practica-tasks-alvarenga-sofia",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch app.js",
+    "start": "node app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "dotenv": "^17.4.2"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "morgan": "^1.11.0",
+    "mysql2": "^3.23.4",
+    "sequelize": "^6.37.8"
+  }
+}
