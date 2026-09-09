@@ -4,6 +4,7 @@ import { conectarDB } from "./src/config/database.js";
 import userRoutes from "./src/routes/user.routes.js";
 import taskRoutes from "./src/routes/task.routes.js";
 import profileRoutes from "./src/routes/profile.routes.js";
+import tagRoutes from "./src/routes/tag.routes.js";
 import "./src/models/relaciones.js";
 
 
@@ -15,6 +16,7 @@ app.use(morgan("dev"));
 app.use("/api", userRoutes);
 app.use("/api", taskRoutes);
 app.use("/api", profileRoutes);
+app.use("/api", tagRoutes);
 
 const iniciarServidor = async () => {
 	try {

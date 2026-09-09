@@ -1,4 +1,5 @@
 import Task from "../models/task.model.js";
+import User from "../models/user.model.js";
 
 const validateTaskData = ({ title, description, isComplete }) => {
     if (typeof title !== "string" || title.trim().length === 0) {
@@ -23,6 +24,13 @@ export const createTask = async (req, res) => {
         if (validationError) {
             return res.status(400).json({ message: validationError });
         }
+        if (!userId) {
+            return res.status(400).json({ message: "userId es obligatorio" });
+        }
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ message: "Usuario no encontrado" });
+        }
         const normalizedTitle = title.trim();
         const normalizedDescription = description.trim();
         const tituloExistente = await Task.findOne({ where: { title: normalizedTitle } });
@@ -43,7 +51,13 @@ export const createTask = async (req, res) => {
 
 export const allTasks = async (req, res) => {
     try {
-        const tasks = await Task.findAll();
+        const tasks = await Task.findAll({
+            include: [{
+                model: User,
+                as: "user",
+                attributes: ["id", "name", "email"]
+            }]
+        });
         return res.status(200).json(tasks);
     } catch (error) {
         return res.status(500).json({ message: "Error al obtener las tareas", error: error.message });
@@ -53,7 +67,13 @@ export const allTasks = async (req, res) => {
 export const getTaskById = async (req, res) => {
     try {
         const { id } = req.params;
-        const task = await Task.findByPk(id);
+        const task = await Task.findByPk(id, {
+            include: [{
+                model: User,
+                as: "user",
+                attributes: ["id", "name", "email"]
+            }]
+        });
         if (!task) {
             return res.status(404).json({ message: "No se ha encontrado la tarea" });
         }
@@ -66,7 +86,7 @@ export const getTaskById = async (req, res) => {
 export const updateTask = async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, description, isComplete, userId } = req.body;
+        const { title, description, isComplete, userId } = req.body || {};
         const validationError = validateTaskData({ title, description, isComplete });
         if (validationError) {
             return res.status(400).json({ message: validationError });
@@ -74,6 +94,13 @@ export const updateTask = async (req, res) => {
         const task = await Task.findByPk(id);
         if (!task) {
             return res.status(404).json({ message: "No se ha encontrado la tarea" });
+        }
+        if (!userId) {
+            return res.status(400).json({ message: "userId es obligatorio" });
+        }
+        const user = await User.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ message: "Usuario no encontrado" });
         }
         const normalizedTitle = title.trim();
         const normalizedDescription = description.trim();
