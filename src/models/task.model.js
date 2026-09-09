@@ -1,25 +1,31 @@
-import {DataTypes} from "sequelize";
+import { DataTypes } from "sequelize";
 import { sequelize } from "../config/database.js";
 
-const Task = sequelize.define("Task" , {
+const Task = sequelize.define("Task", {
     id: {
-        type: DataTypes.INTEGER, 
-        primaryKey: true, 
-        autoIncrement: true 
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
     },
-    name:{
-        type: DataTypes.STRING(100), 
-        allowNull: false 
+    title: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+        unique: true,
     },
-    email:{
-        type: DataTypes.STRING(100), 
-        allowNull: false, 
-        unique: true
+    description: {
+        type: DataTypes.STRING(100),
+        allowNull: false
     },
-    password : {
-         type: DataTypes.STRING(100), 
-         allowNull: false
+    isComplete: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    userId: {
+        type: DataTypes.INTEGER,
+        allowNull: true
     }
+}, {
+    tableName: "tasks"
 });
 
 export default Task;
