@@ -1,4 +1,5 @@
 import User from "../models/user.model.js";
+import Task from "../models/task.model.js";
 
 const validateUserData = ({ name, email, password }) => {
     if (typeof name !== "string" || name.trim().length === 0) {
@@ -43,7 +44,13 @@ export const createUser = async (req, res) => {
 
 export const allUsers = async (req, res) => {
     try {
-        const users = await User.findAll();
+        const users = await User.findAll({
+            attributes: { exclude: ["password"] },
+            include: [{
+                model: Task,
+                as: "tasks"
+            }]
+        });
         return res.status(200).json(users);
     } catch (error) {
         return res.status(500).json({ message: "Error al obtener los usuarios", error: error.message });
@@ -53,7 +60,13 @@ export const allUsers = async (req, res) => {
 export const getUserById = async (req, res) => {
     try {
         const { id } = req.params;
-        const user = await User.findByPk(id);
+        const user = await User.findByPk(id, {
+            attributes: { exclude: ["password"] },
+            include: [{
+                model: Task,
+                as: "tasks"
+            }]
+        });
         if (!user) {
             return res.status(404).json({ message: "No se ha encontrado el usuario" });
         }
